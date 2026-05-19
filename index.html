@@ -314,13 +314,14 @@ html, body {
   box-shadow: inset 0 0 0 1px rgba(0,212,255,0.30);
 }
 
-/* Edge matrix canvas — visible when card is edge-on (~90° / ~270°) */
-#edgeMatrix {
-  position: absolute; inset: 0;
-  border-radius: var(--radius);
+/* Edge matrix side-face canvases — live inside card-wrapper in 3D space */
+#emL, #emR {
+  position: absolute;
+  top: 0; left: 0;
   pointer-events: none;
-  opacity: 0;
-  z-index: 5;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  /* width / height / transform set via JS once card dimensions are known */
 }
 
 /* Hint */
@@ -418,12 +419,12 @@ html, body {
            href="https://wa.me/212711374861?text=Hello%2C%20I'm%20reaching%20you%20from%20your%20carte%20de%20visite!"
            target="_blank" rel="noopener noreferrer"
            aria-label="Contact on WhatsApp"
-           style="top:50%;left:4%;width:54%;height:13%;"></a>
+           style="top:41%;left:4%;width:56%;height:13%;"></a>
         <!-- Email row -->
         <a class="card-link"
            href="mailto:inr.abderrahmane.20@gmail.com"
            aria-label="Send email"
-           style="top:63%;left:4%;width:64%;height:13%;"></a>
+           style="top:55%;left:4%;width:66%;height:13%;"></a>
       </div>
 
       <!-- Physical edge strips -->
@@ -432,10 +433,11 @@ html, body {
         <div class="edge-strip edge-bottom"></div>
       </div>
 
-    </div><!-- card-wrapper -->
+      <!-- Matrix rain side faces — positioned as 3D panels by JS -->
+      <canvas id="emL"></canvas>
+      <canvas id="emR"></canvas>
 
-    <!-- Edge matrix rain — shown when card is edge-on -->
-    <canvas id="edgeMatrix"></canvas>
+    </div><!-- card-wrapper -->
 
   </div><!-- scene -->
 </div><!-- scene-wrap -->
@@ -740,7 +742,6 @@ loadDriveImage(document.getElementById('imgBack'),  document.getElementById('phB
   const hudRot    = document.getElementById('hud-rot-disp');
   const hudFace   = document.getElementById('hud-face');
   const hudVel    = document.getElementById('hud-vel');
-  const edgeCv    = document.getElementById('edgeMatrix');
 
   /* ── State ── */
   let rot        = 0;       // current Y rotation (degrees, unbounded)
@@ -867,14 +868,6 @@ loadDriveImage(document.getElementById('imgBack'),  document.getElementById('phB
       : (Math.abs(norm360 - 180) / 90) * 100;
     if (rotFill) rotFill.style.width = `${barPct}%`;
 
-    /* Edge matrix opacity — peaks when card is exactly edge-on (90° / 270°) */
-    const distFromEdge = Math.min(
-      Math.abs(norm360 - 90),
-      Math.abs(norm360 - 270)
-    );
-    const matrixAlpha = Math.max(0, 1 - distFromEdge / 22);
-    if (edgeCv) edgeCv.style.opacity = matrixAlpha;
-
     /* HUD telemetry */
     if (hudRot) hudRot.textContent = `rotY: ${rot.toFixed(2)}°`;
     if (hudVel) hudVel.textContent = `vel: ${Math.abs(velocity).toFixed(2)}`;
@@ -977,58 +970,79 @@ loadDriveImage(document.getElementById('imgBack'),  document.getElementById('phB
 })();
 
 /* ═══════════════════════════════════════════════════════
-   EDGE MATRIX RAIN — shown when card is edge-on
+   EDGE MATRIX RAIN
+   emL — left side face,  visible when card is at ~90°
+   emR — right side face, visible when card is at ~270°
+   Both are 3D panels inside card-wrapper, 12 px wide,
+   full card height, positioned via rotateY + translateZ.
 ═══════════════════════════════════════════════════════ */
 (function() {
-  const cv  = document.getElementById('edgeMatrix');
-  const ctx = cv.getContext('2d');
-  const scene = document.getElementById('scene');
+  const THICKNESS = 12;   // matches card translateZ(6px) × 2
+  const CHAR_H    = 8;    // px per character row
+  const CHARS     = '01アイウエオカキクケコ01010101'.split('');
 
-  let W, H, cols, drops, speeds;
+  const wrapper = document.getElementById('cardWrapper');
+  const emL = document.getElementById('emL');
+  const emR = document.getElementById('emR');
+  const ctxL = emL.getContext('2d');
+  const ctxR = emR.getContext('2d');
+
+  let H, cols, dropsL, dropsR, speedsL, speedsR;
 
   function init() {
-    const r = scene.getBoundingClientRect();
-    W = cv.width  = Math.round(r.width);
-    H = cv.height = Math.round(r.height);
-    cols  = Math.floor(W / 13);
-    drops = Array.from({ length: cols }, () => Math.random() * -(H / 13));
-    speeds = Array.from({ length: cols }, () => 0.6 + Math.random() * 0.8);
+    const cardW = wrapper.offsetWidth;
+    H = wrapper.offsetHeight;
+
+    /* Size: THICKNESS wide, full card height */
+    emL.width  = emR.width  = THICKNESS;
+    emL.height = emR.height = H;
+
+    /* 3D placement — standard CSS cube side-face formula:
+       rotateY(±90deg) translateZ(cardWidth/2)
+       Left face  (rotateY(-90deg)) → faces viewer at wrapper 90°
+       Right face (rotateY( 90deg)) → faces viewer at wrapper 270°  */
+    emL.style.transform = `rotateY(-90deg) translateZ(${cardW / 2}px)`;
+    emR.style.transform = `rotateY(90deg)  translateZ(${cardW / 2}px)`;
+
+    cols   = Math.max(1, Math.floor(THICKNESS / CHAR_H));
+    dropsL = Array.from({ length: cols }, () => Math.random() * -(H / CHAR_H));
+    dropsR = Array.from({ length: cols }, () => Math.random() * -(H / CHAR_H));
+    speedsL = Array.from({ length: cols }, () => 0.7 + Math.random() * 0.8);
+    speedsR = Array.from({ length: cols }, () => 0.7 + Math.random() * 0.8);
   }
 
   init();
   window.addEventListener('resize', init);
 
-  function draw() {
-    /* Fade trail */
-    ctx.fillStyle = 'rgba(0,0,0,0.18)';
-    ctx.fillRect(0, 0, W, H);
+  function drawFace(ctx, drops, speeds) {
+    ctx.fillStyle = 'rgba(0,0,0,0.20)';
+    ctx.fillRect(0, 0, THICKNESS, H);
 
     for (let i = 0; i < cols; i++) {
-      const x = i * 13;
-      const y = drops[i] * 13;
-      const char = Math.random() < 0.72 ? (Math.random() < 0.5 ? '0' : '1')
-                                         : String.fromCharCode(0x30A0 + Math.floor(Math.random() * 96));
+      const x = i * CHAR_H;
+      const y = drops[i] * CHAR_H;
+      const ch = CHARS[Math.floor(Math.random() * CHARS.length)];
 
-      /* Head — bright green */
-      ctx.font      = `bold ${11 + (i % 3)}px "JetBrains Mono",monospace`;
-      ctx.fillStyle = `rgba(0,255,65,${0.85 + Math.random() * 0.15})`;
-      ctx.fillText(char, x, y);
+      ctx.font      = `bold ${CHAR_H - 1}px "JetBrains Mono",monospace`;
+      ctx.fillStyle = `rgba(0,255,65,${0.9 + Math.random() * 0.1})`;
+      ctx.fillText(ch, x, y);
 
-      /* One step behind — mid green */
-      const prev = CHARS_POOL[Math.floor(Math.random() * CHARS_POOL.length)];
-      ctx.fillStyle = 'rgba(0,200,50,0.55)';
-      ctx.fillText(prev, x, y - 13);
+      ctx.fillStyle = 'rgba(0,180,40,0.5)';
+      ctx.fillText(CHARS[Math.floor(Math.random() * CHARS.length)], x, y - CHAR_H);
 
       drops[i] += speeds[i];
-      if (drops[i] * 13 > H && Math.random() > 0.975) {
+      if (drops[i] * CHAR_H > H && Math.random() > 0.97) {
         drops[i] = -2;
-        speeds[i] = 0.5 + Math.random() * 0.9;
+        speeds[i] = 0.6 + Math.random() * 0.9;
       }
     }
-    requestAnimationFrame(draw);
   }
 
-  const CHARS_POOL = '01アイウエオカキクケコ01010101'.split('');
+  function draw() {
+    drawFace(ctxL, dropsL, speedsL);
+    drawFace(ctxR, dropsR, speedsR);
+    requestAnimationFrame(draw);
+  }
   draw();
 })();
 </script>
