@@ -320,6 +320,13 @@ html, body {
 }
 
 
+/* Touch / click particle + ripple canvas */
+#touch-canvas {
+  position: fixed; inset: 0; z-index: 15;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
 /* Hint */
 #hint {
   position: fixed;
@@ -364,6 +371,9 @@ html, body {
 
 <!-- ── Scanline sweep ──────────────────────────────── -->
 <div id="scanline"></div>
+
+<!-- ── Touch / click effects canvas ───────────────── -->
+<canvas id="touch-canvas"></canvas>
 
 <!-- ── HUD Corners ─────────────────────────────────── -->
 <div class="hud" id="hud-tl">
@@ -961,6 +971,114 @@ loadDriveImage(document.getElementById('imgBack'),  document.getElementById('phB
   });
 })();
 
+/* ═══════════════════════════════════════════════════════
+   TOUCH / CLICK EFFECTS
+   — tap  : burst of glowing particles + two ripple rings
+   — drag : glowing particle trail
+   — mix-blend-mode:screen keeps it visible over everything
+     without blocking card interactions (pointer-events:none)
+═══════════════════════════════════════════════════════ */
+(function () {
+  const cv  = document.getElementById('touch-canvas');
+  const ctx = cv.getContext('2d');
+  const PALETTE = ['#2a7cff','#00d4ff','#00ff8c','#a8bcd4','#ffffff'];
+
+  let W, H;
+  function resize() { W = cv.width = window.innerWidth; H = cv.height = window.innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+
+  /* ── Particle ── */
+  class Particle {
+    constructor(x, y, col, burst) {
+      this.x  = x; this.y = y;
+      this.vx = (Math.random() - .5) * (burst ? 5 : 1.2);
+      this.vy = (Math.random() - .5) * (burst ? 5 : 1.2) - (burst ? 1.5 : 0);
+      this.r  = burst ? (1.5 + Math.random() * 3) : (1 + Math.random() * 2);
+      this.col   = col;
+      this.life  = 1;
+      this.decay = burst ? (.012 + Math.random() * .018) : (.025 + Math.random() * .02);
+    }
+    step() {
+      this.x += this.vx; this.y += this.vy;
+      this.vy += .045; this.vx *= .97;
+      this.life -= this.decay;
+    }
+    draw() {
+      const a = Math.max(0, this.life);
+      ctx.save();
+      ctx.globalAlpha = a;
+      ctx.shadowBlur  = 10; ctx.shadowColor = this.col;
+      ctx.fillStyle   = this.col;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.r * a, 0, 6.283);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  /* ── Ripple ── */
+  class Ripple {
+    constructor(x, y, col, speed) {
+      this.x = x; this.y = y; this.col = col;
+      this.r = 4; this.maxR = 70 + Math.random() * 50;
+      this.speed = speed || (2 + Math.random() * 2);
+    }
+    step() { this.r += this.speed; }
+    get alpha() { return Math.max(0, .65 * (1 - this.r / this.maxR)); }
+    get done()  { return this.r >= this.maxR; }
+    draw() {
+      ctx.save();
+      ctx.globalAlpha = this.alpha;
+      ctx.strokeStyle = this.col;
+      ctx.lineWidth   = 1.5;
+      ctx.shadowBlur  = 12; ctx.shadowColor = this.col;
+      ctx.beginPath(); ctx.arc(this.x, this.y, this.r, 0, 6.283); ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  let parts = [], ripples = [];
+
+  function randomCol() { return PALETTE[Math.floor(Math.random() * PALETTE.length)]; }
+
+  function burst(x, y) {
+    const c1 = randomCol(), c2 = randomCol();
+    for (let i = 0; i < 14; i++) parts.push(new Particle(x, y, c1, true));
+    ripples.push(new Ripple(x, y, c1, 2.5));
+    ripples.push(new Ripple(x, y, c2, 1.5));
+  }
+
+  function trail(x, y) {
+    if (Math.random() < .45) {
+      const p = new Particle(x, y, randomCol(), false);
+      parts.push(p);
+    }
+  }
+
+  (function loop() {
+    ctx.clearRect(0, 0, W, H);
+    ripples.forEach(r => { r.step(); r.draw(); });
+    ripples = ripples.filter(r => !r.done);
+    parts.forEach(p => { p.step(); p.draw(); });
+    parts = parts.filter(p => p.life > 0);
+    requestAnimationFrame(loop);
+  })();
+
+  /* Mouse */
+  let mdown = false;
+  document.addEventListener('mousedown', e => { mdown = true; burst(e.clientX, e.clientY); });
+  document.addEventListener('mouseup',   () => mdown = false);
+  document.addEventListener('mousemove', e => { if (mdown) trail(e.clientX, e.clientY); });
+
+  /* Touch — passive so card drag still works */
+  document.addEventListener('touchstart', e => {
+    for (const t of e.changedTouches) burst(t.clientX, t.clientY);
+  }, { passive: true });
+  document.addEventListener('touchmove', e => {
+    for (const t of e.changedTouches) trail(t.clientX, t.clientY);
+  }, { passive: true });
+})();
 </script>
 </body>
 </html>
