@@ -1,0 +1,358 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║       BUSINESS CARD VIEWER V2 - COMPLETE INTERACTION GUIDE               ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ DESKTOP INTERACTIONS                                                    │
+└─────────────────────────────────────────────────────────────────────────┘
+
+1. ROTATION (Drag to Rotate)
+   ┌─────────────────────────────┐
+   │    ← DRAG LEFT → DRAG RIGHT │
+   │       Rotates Back    Forward  │
+   │    (Reveals card back) (Shows front) │
+   │                             │
+   │    Releases = Momentum &    │
+   │    Inertia (smooth coasting)│
+   │                             │
+   │    Unlimited spin in any    │
+   │    direction!               │
+   └─────────────────────────────┘
+   
+   ├─ Speed: Adjustable via CONFIG.rotation.sensitivity
+   ├─ Physics: Momentum-based inertia damping
+   ├─ Indicator: Bar at bottom shows progress (0° to 360°)
+   └─ Hint: "drag & release anywhere" (disappears after first interaction)
+
+2. ZOOM (Scroll Mouse Wheel)
+   ┌─────────────────────────────┐
+   │    SCROLL UP = ZOOM IN       │
+   │    SCROLL DOWN = ZOOM OUT    │
+   │                             │
+   │    Range: 0.5x to 3.0x      │
+   │    (50% zoom out to 300%)   │
+   │                             │
+   │    Has momentum! Coasts     │
+   │    after you stop scrolling │
+   │                             │
+   │    Real-time display:       │
+   │    "zoom: 1.00x"            │
+   └─────────────────────────────┘
+   
+   ├─ Min: 0.5x (zoom out to see entire card)
+   ├─ Max: 3.0x (zoom in for details)
+   ├─ Speed: Adjustable via CONFIG.zoom.speed
+   ├─ Damping: Smooth coasting animation
+   └─ Display: Bottom-left HUD shows zoom level
+
+3. HOVER LIGHTING (Move Mouse Over Card)
+   ┌─────────────────────────────┐
+   │    🖱️  MOVE CURSOR OVER CARD  │
+   │                             │
+   │    Within 70% distance:     │
+   │    • Gloss reflects cursor  │
+   │    • Card glows slightly    │
+   │    • Lighting follows move  │
+   │                             │
+   │    Outside 70% distance:    │
+   │    • Effects fade out       │
+   │    • Smooth transition      │
+   │                             │
+   │    Desktop only feature     │
+   └─────────────────────────────┘
+   
+   ├─ Activation: Mouse within ~70% from center
+   ├─ Effect 1: Specular gloss reflection
+   ├─ Effect 2: Card glow and shadow
+   ├─ Intensity: Adjustable via CONFIG.hover.glossIntensity
+   └─ Smooth: Gradual fade in/out
+
+4. KEYBOARD CONTROLS (For Power Users)
+   ┌─────────────────────────────┐
+   │    ← / → or A / D           │
+   │    Rotate LEFT / RIGHT      │
+   │    (Adds velocity)          │
+   │                             │
+   │    SPACE or ENTER           │
+   │    Gentle flick (toggles)   │
+   │    (Reverses if spinning)   │
+   │                             │
+   │    Tab to focus card first  │
+   │    (if not auto-focused)    │
+   └─────────────────────────────┘
+   
+   ├─ ← Arrow: Velocity -= 3 deg/frame
+   ├─ → Arrow: Velocity += 3 deg/frame
+   ├─ A Key: Same as ← Arrow
+   ├─ D Key: Same as → Arrow
+   ├─ Space: Gentle flick (±8 deg/frame)
+   └─ Enter: Same as Space
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ MOBILE INTERACTIONS                                                     │
+└─────────────────────────────────────────────────────────────────────────┘
+
+1. ROTATION (Swipe Left/Right)
+   ┌─────────────────────────────┐
+   │    ← SWIPE LEFT   │  SWIPE RIGHT → │
+   │       Rotates      Rotates       │
+   │       Back        Forward        │
+   │       (Back face)  (Front face)  │
+   │                                 │
+   │    Release = Momentum carry      │
+   │    (continues spinning)         │
+   │                                 │
+   │    Single finger tap & drag      │
+   └─────────────────────────────────┘
+   
+   ├─ Method: Touch drag (one finger)
+   ├─ Sensitivity: 0.52 degrees per pixel (adjustable)
+   ├─ Physics: Momentum-based inertia
+   ├─ Works: On all touch devices
+   └─ Indicator: Bottom bar shows rotation progress
+
+2. ZOOM (Pinch with Two Fingers)
+   ┌─────────────────────────────┐
+   │    🤝 PINCH TO ZOOM OUT      │
+   │    🤜🤛 SPREAD TO ZOOM IN     │
+   │                             │
+   │    Two-finger pinch gesture │
+   │    Spread fingers to zoom in│
+   │    Pinch fingers to zoom out│
+   │                             │
+   │    Smooth scaling           │
+   │    Range: 0.5x to 3.0x      │
+   │                             │
+   │    Works alongside rotation!│
+   └─────────────────────────────┘
+   
+   ├─ Gesture: Two-finger pinch/spread
+   ├─ Zoom: 0.5x (zoomed out) to 3.0x (zoomed in)
+   ├─ Sensitivity: ~0.01 per pixel change
+   ├─ Display: Real-time zoom level on HUD
+   └─ Independent: Works while rotating!
+
+3. DEVICE TILT (Optional - Must Enable)
+   ┌─────────────────────────────┐
+   │    📱 TILT DEVICE          │
+   │                             │
+   │    TILT RIGHT               │
+   │    → Card rotates FORWARD   │
+   │                             │
+   │    TILT LEFT                │
+   │    → Card rotates BACKWARD  │
+   │                             │
+   │    Threshold: ±10° tilt     │
+   │    Sensitivity: 0.3x        │
+   │                             │
+   │    (Disabled by default     │
+   │     to save battery)        │
+   └─────────────────────────────┘
+   
+   ├─ Feature: Optional (CONFIG.mobile.tiltEnabled)
+   ├─ Permission: iOS 13+ requires user approval
+   ├─ Sensor: Device accelerometer/gyroscope
+   ├─ Axis: Y-axis rotation (gamma)
+   ├─ Threshold: ±10° before activation
+   └─ Battery: Can be disabled to save power
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ COMBINED INTERACTIONS (Works Together!)                                │
+└─────────────────────────────────────────────────────────────────────────┘
+
+SCENARIO 1: Zoomed In While Rotating
+┌──────────────────────────────────┐
+│ 1. Scroll wheel to zoom in (2x)  │
+│ 2. While zoomed, drag to rotate  │
+│ 3. Card rotates at 2x scale      │
+│ 4. Both transforms combine!      │
+│                                  │
+│ Result: Smooth, natural motion   │
+└──────────────────────────────────┘
+
+SCENARIO 2: Mobile Pinch While Swiping
+┌──────────────────────────────────┐
+│ 1. Swipe left to rotate back     │
+│ 2. While swiping, add 2nd finger │
+│ 3. Pinch to zoom while rotating  │
+│ 4. Smooth combined gesture!      │
+│                                  │
+│ Result: Natural, intuitive UX    │
+└──────────────────────────────────┘
+
+SCENARIO 3: Hover Effects While Rotating
+┌──────────────────────────────────┐
+│ 1. Move mouse to hover (glow on) │
+│ 2. While hovering, drag to rotate│
+│ 3. Lighting follows cursor       │
+│ 4. Card spins with effect        │
+│                                  │
+│ Result: Beautiful, responsive FX │
+└──────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ HUD DISPLAY - REAL-TIME INFORMATION                                    │
+└─────────────────────────────────────────────────────────────────────────┘
+
+    TOP-LEFT CORNER          TOP-RIGHT CORNER
+    ┌──────────────────┐    ┌──────────────────┐
+    │ // engineer      │    │ sys.status //    │
+    │ ABDERRAHMANE     │    │ ● ONLINE         │
+    │ software.dev.eng │    │ --:--:-- (time)  │
+    └──────────────────┘    └──────────────────┘
+
+    BOTTOM-LEFT CORNER       BOTTOM-RIGHT CORNER
+    ┌──────────────────┐    ┌──────────────────┐
+    │ rotY: 45.23°     │    │ drag_sensitivity │
+    │ face: front      │    │ inertia_damping  │
+    │ vel: 2.34        │    │ renderer: rAF/60 │
+    │ zoom: 1.50x  ◄──┼──┐ │                  │
+    └──────────────────┘│  └──────────────────┘
+                        │
+           NEW! Shows zoom level
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ HINT SYSTEM                                                             │
+└─────────────────────────────────────────────────────────────────────────┘
+
+BEFORE FIRST INTERACTION:
+┌──────────────────────────────────────────────────────┐
+│   ← drag & release • scroll to zoom • hover for effect → │
+│   (Animated arrows pulsing)                         │
+└──────────────────────────────────────────────────────┘
+
+AFTER FIRST INTERACTION:
+┌──────────────────────────────────────────────────────┐
+│   (Hint fades out - user already knows!)            │
+└──────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ VISUAL FEEDBACK                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+
+ROTATION INDICATOR (Bottom of card):
+┌──────────────────────────────────┐
+│  ●═══════════════════════════    │  ◄─ Shows progress
+│  (Fills as card rotates 180°)    │
+│  drag freely — release anywhere  │
+└──────────────────────────────────┘
+
+CARD SHADOW:
+┌──────────────────────────────────┐
+│           ┌────────┐             │
+│           │  CARD  │             │
+│           └────────┘             │
+│         ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀        │
+│  (Compresses when card is flat)  │
+└──────────────────────────────────┘
+
+CURSOR INDICATOR:
+┌──────────────────────────────────┐
+│  Crosshair cursor (🔍)           │
+│  Changes to grab (✋) on card    │
+│  Changes to grabbing (✋) dragging│
+└──────────────────────────────────┘
+
+GLOSS REFLECTION:
+┌──────────────────────────────────┐
+│  Bright highlight on card surface│
+│  Follows mouse position (desktop)│
+│  Angle updates continuously      │
+│  Intensity based on distance     │
+└──────────────────────────────────┘
+
+CARD GLOW (Hover):
+┌──────────────────────────────────┐
+│  Subtle cyan glow around card    │
+│  Appears when hovering           │
+│  Adds drop-shadow effect         │
+│  Fades when moving away          │
+└──────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ PERFORMANCE INDICATORS                                                  │
+└─────────────────────────────────────────────────────────────────────────┘
+
+• Smooth 60fps animation (no stuttering)
+• Instant response to input
+• Smooth momentum and coasting
+• No lag on hover effects
+• Fast image loading from Google Drive
+• Optimized for mobile devices
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ TROUBLESHOOTING INTERACTIONS                                           │
+└─────────────────────────────────────────────────────────────────────────┘
+
+ISSUE: Zoom not working
+┌──────────────────────────────────┐
+│ Solution: Make sure scrolling    │
+│ is on the card. Try scrolling    │
+│ more slowly or adjusting         │
+│ CONFIG.zoom.speed               │
+└──────────────────────────────────┘
+
+ISSUE: Rotation feels sluggish
+┌──────────────────────────────────┐
+│ Solution: Increase sensitivity   │
+│ CONFIG.rotation.sensitivity      │
+│ (Higher = more responsive)       │
+└──────────────────────────────────┘
+
+ISSUE: Mobile pinch not zooming
+┌──────────────────────────────────┐
+│ Solution: Ensure two fingers are│
+│ on screen simultaneously. Try    │
+│ spreading fingers more.          │
+└──────────────────────────────────┘
+
+ISSUE: Hover effects not visible
+┌──────────────────────────────────┐
+│ Solution: Hover only works on    │
+│ desktop with mouse. Make sure    │
+│ CONFIG.features.hover = true     │
+└──────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ DEVICE SPECIFIC TIPS                                                    │
+└─────────────────────────────────────────────────────────────────────────┘
+
+DESKTOP (Chrome, Firefox, Safari, Edge):
+✅ Use all features: drag, scroll, hover, keyboard
+✅ Smooth 60fps performance
+✅ Full lighting effects
+✅ Keyboard shortcuts work
+
+TABLET (iPad, Android Tablets):
+✅ Swipe to rotate
+✅ Pinch to zoom
+✅ Hover effects disabled (no mouse)
+✅ Optimized touch targets
+
+PHONE (iPhone, Android):
+✅ Swipe to rotate (single finger)
+✅ Pinch to zoom (two fingers)
+✅ Optional tilt control (if enabled)
+✅ Optimized for small screens
+✅ Performance optimized
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ TIPS FOR BEST EXPERIENCE                                               │
+└─────────────────────────────────────────────────────────────────────────┘
+
+1. ROTATION: Drag in smooth motions for natural momentum
+2. ZOOM: Use gentle scrolling for precise control
+3. HOVER: Move mouse over card for lighting effect
+4. MOBILE: Use two-finger pinch for zoom (more intuitive)
+5. KEYBOARD: Use arrow keys for precise rotation control
+6. COMBO: Try zooming in and rotating simultaneously
+7. HINT: Notice the hint changes based on your interaction
+8. STATS: Watch the HUD for real-time rotation/zoom info
+
+═══════════════════════════════════════════════════════════════════════════
+
+Ready to experience the interactive 3D business card! 🎉
+
+Open: business-card-viewer-v2.html in your browser
+
+═══════════════════════════════════════════════════════════════════════════
